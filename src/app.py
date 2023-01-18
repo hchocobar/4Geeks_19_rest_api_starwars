@@ -130,6 +130,49 @@ def get_planet(planet_id):
         return response_body, 200
 
 
+# Endpoint /favorite/planet/
+@app.route('/favorite/planet/', methods=['GET'])
+def favorites_planets():
+    if request.method == 'GET':
+        current_user_id = 1  # deberia obtnerse de las variables de session
+        current_user = User.query.filter_by(id=current_user_id).first()
+        favorites = current_user.favorite_planet
+        results = [favorite.name for favorite in favorites]
+        print(current_user, favorites, results)
+        response_body = {"message": "ok",
+                         "total_records": len(results),
+                         "results": results}
+        return response_body, 200
+
+
+# Endpoint /favorite/planet/<int:planet_id>
+@app.route('/favorite/planet/<int:planet_id>', methods=['POST', 'DELETE'])
+def favorite_planet(planet_id):
+    if request.method == 'POST':
+        current_user_id = 1  # deberia obtnerse de las variables de session
+        current_user = User.query.filter_by(id=current_user_id).first()  # Obtenemos el usario actual
+        favorite_planet = Planets.query.filter_by(id=planet_id).first()  # Obtenemos el planeta a agregar
+        current_user.favorite_planet.append(favorite_planet)  # 
+        db.session.commit()
+        # TODO - validar si el planeta ya es un favorito - validar que el planeta existe
+        print(current_user.favorite_planet)
+        print(favorite_planet.name)
+        response_body = {"message": "add ok",
+                         "results": favorite_planet.name}
+        return response_body
+    if request.method == 'DELETE':
+        current_user_id = 1  # deberia obtnerse de las variables de session
+        current_user = User.query.filter_by(id=current_user_id).first()  # Obtenemos el usario actual
+        favorite_planet = Planets.query.filter_by(id=planet_id).first()  # Obtenemos el planeta a remover
+        current_user.favorite_planet.remove(favorite_planet)  # 
+        db.session.commit()
+        # TODO - validar si el planeta ya es un favorito - validar que el planeta existe
+        response_body = {"message": "delete ok",
+                         "results": favorite_planet.name}
+        return response_body
+
+
+
 # This only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))

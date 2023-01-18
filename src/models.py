@@ -2,15 +2,21 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+user_planet = db.Table('user_planet',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('planet_id', db.Integer, db.ForeignKey('planets.id')))
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
+    favorite_planet = db.relationship('Planets', secondary=user_planet)  # Favoritos
+
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<User %r>' % self.id
 
     def serialize(self):
         return {"id": self.id,
@@ -62,3 +68,5 @@ class Planets(db.Model):
                 "orbital_period": self.orbital_period,
                 "rotation_period": self.rotation_period,
                 "diameter": self.diameter}
+
+
