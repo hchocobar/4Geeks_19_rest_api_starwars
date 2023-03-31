@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Characters, Planets
+from models import db, User, Characters, Planets, UserCharacters
 
 
 app = Flask(__name__)
@@ -138,11 +138,30 @@ def favorites_planets():
         current_user = User.query.filter_by(id=current_user_id).first()
         favorites = current_user.favorite_planet
         results = [favorite.name for favorite in favorites]
-        print(current_user, favorites, results)
+        # print(current_user, favorites, results)
         response_body = {"message": "ok",
                          "total_records": len(results),
                          "results": results}
         return response_body, 200
+
+
+# Endpoint /favorite/people/
+@app.route('/favorite/people', methods=['GET'])
+def favorites_people():
+    if request.method == 'GET':
+        favorites = UserCharacters.query.all() 
+        result = list(map(lambda obj : obj.serialize(), favorites ))
+        response_body = {"msg" : "ok",
+                        "total_records": len(result),
+                        "result": result }
+        return jsonify(response_body), 200  
+    if request.method == 'GET':
+        favorites = UserCharacters.query.filter(UserCharacters.user_id == user_id).all()
+        result = [favorite.serialize() for favorite in favorites]
+        response_body = {"msg" : "ok",
+                        "total_records": len(result),
+                        "result": result }
+        return jsonify(response_body), 200  
 
 
 # Endpoint /favorite/planet/<int:planet_id>
@@ -155,8 +174,8 @@ def favorite_planet(planet_id):
         current_user.favorite_planet.append(favorite_planet)  # 
         db.session.commit()
         # TODO - validar si el planeta ya es un favorito - validar que el planeta existe
-        print(current_user.favorite_planet)
-        print(favorite_planet.name)
+        # print(current_user.favorite_planet)
+        # print(favorite_planet.name)
         response_body = {"message": "add ok",
                          "results": favorite_planet.name}
         return response_body
@@ -171,6 +190,23 @@ def favorite_planet(planet_id):
                          "results": favorite_planet.name}
         return response_body
 
+
+@app.route('/favorite/people/<int:user_id>', methods=['POST', 'DELETE'])
+def favorite_people(user_id):
+    if request.method == 'POST':
+        request_body = request.get_json()
+        favorite = UserCharacters(user_id = request_body["user_id"], 
+                            characters_id = request_body["characters_id"])
+        db.session.add(favorite)
+        db.session.commit()
+        return jsonify(request_body), 200
+    if request.method == 'DELETE':
+        favorites1 = UserCharacters.query.get(user_id)
+        if favorites1 is None:
+            raise APIException('Favorites not found', status_code=404)
+        db.session.delete(favorites1)
+        db.session.commit()
+        return jsonify("Ok"), 200
 
 
 # This only runs if `$ python src/app.py` is executed
