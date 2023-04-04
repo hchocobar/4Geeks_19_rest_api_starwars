@@ -2,20 +2,20 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-user_planet = db.Table('user_planet',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('planet_id', db.Integer, db.ForeignKey('planets.id')))
+users_fav_planets = db.Table('users_fav_planets',
+    db.Column('users_id', db.Integer, db.ForeignKey('users.id')),
+    db.Column('planets_id', db.Integer, db.ForeignKey('planets.id')))
 
 
-class User(db.Model):
+class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
-    favorite_planet = db.relationship('Planets', secondary=user_planet)  # Favoritos
+    users_favorite_planets = db.relationship('Planets', secondary=users_fav_planets)  # Favoritos
 
     def __repr__(self):
-        return '<User %r>' % self.id
+        return '<Users %r>' % self.id
 
     def serialize(self):
         return {"id": self.id,
@@ -26,12 +26,14 @@ class User(db.Model):
 class Planets(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
-    population = db.Column(db.String(250))
-    terrain = db.Column(db.String(250))
+    rotation_period = db.Column(db.String(20))
+    orbital_period = db.Column(db.String(20))
+    diameter = db.Column(db.String(20))
     climate = db.Column(db.String(100))
-    orbital_period = db.Column(db.String(100))
-    rotation_period = db.Column(db.String(100))
-    diameter = db.Column(db.String(100))
+    gravity = db.Column(db.String(100))
+    terrain = db.Column(db.String(100))
+    surface_water = db.Column(db.String(20))
+    population = db.Column(db.String(20))
 
     def __repr__(self):
         return '<Planets %r>' % self.id
@@ -39,22 +41,27 @@ class Planets(db.Model):
     def serialize(self):
         return {"id": self.id,
                 "name": self.name,
-                "population": self.population,
-                "terrain": self.terrain,
-                "climate": self.climate,
-                "orbital_period": self.orbital_period,
                 "rotation_period": self.rotation_period,
-                "diameter": self.diameter}
+                "orbital_period": self.orbital_period,
+                "diameter": self.diameter,
+                "climate": self.climate,
+                "gravity": self.gravity,
+                "terrain": self.terrain,
+                "surface_water": self.surface_water,
+                "population": self.population}
 
 
 class Characters (db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
-    gender = db.Column(db.String(50))
     height = db.Column(db.Integer)
-    eyes_color = db.Column(db.String(50))
+    mass = db.Column(db.Integer)
     hair_color = db.Column(db.String(50))
     skin_color = db.Column(db.String(50))
+    eyes_color = db.Column(db.String(50))
+    birth_year = db.Column(db.String(10))
+    gender = db.Column(db.String(50))
+    homeworld = db.Column(db.String(50))
 
     def __repr__(self):
         return '<Characters %r>' % self.id
@@ -62,22 +69,25 @@ class Characters (db.Model):
     def serialize(self):
         return {"id": self.id,
                 "name": self.name,
-                "gender": self.gender,
                 "height": self.height,
-                "eyes_color": self.eyes_color,
+                "mass": self.mass,
                 "hair_color": self.hair_color,
-                "skin_color": self.skin_color}
+                "skin_color": self.skin_color,
+                "eyes_color": self.eyes_color,
+                "birht_year": self.birth_year,
+                "gender": self.gender,
+                "homeworld": self.homeworld}
 
 
-class UserCharacters(db.Model) :
+class UsersFavCharacters(db.Model) :
     id = db.Column(db.Integer, primary_key = True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    users_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     characters_id= db.Column(db.Integer, db.ForeignKey('characters.id'))
 
     def __repr__(self):
-        return '<UserCharacters %r>' % self.id
+        return '<UsersFavCharacters %r>' % self.id
 
     def serialize(self):
         return {"id": self.id,
-                "user_id": self.user_id,
+                "users_id": self.user_id,
                 "characters_id" : self.characters_id}

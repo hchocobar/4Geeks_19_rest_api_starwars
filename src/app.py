@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Characters, Planets, UserCharacters
+from models import db, Users, Characters, Planets, UsersFavCharacters
 
 
 app = Flask(__name__)
@@ -39,12 +39,12 @@ def sitemap():
     return generate_sitemap(app)
 
 
-# Endpoint /user
+# Endpoint /users
 @app.route('/users', methods=['GET', 'POST'])
-def user():
+def users():
     if request.method == 'GET':
-        users = User.query.all()
-        results = [user.serialize() for user in users]
+        all_rows = Users.query.all()
+        results = [row.serialize() for row in all_rows]
         response_body = {"message": "ok",
                          "total_records": len(results),
                          "results": results}
@@ -52,37 +52,37 @@ def user():
         # return jsonify(response_body), 200
     if request.method == 'POST':
         request_body = request.get_json()
-        user = User(email = request_body['email'],
+        row = Users(email = request_body['email'],
                     password = request_body['password'],
                     is_active = request_body['is_active'])
-        db.session.add(user)
+        db.session.add(row)
         db.session.commit()
         return request_body, 200
         # return jsonify(request_body), 200
 
 
-# Endpoint /user/<int:user_id>
+# Endpoint /users/<int:user_id>
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_user(user_id):
     if request.method == 'GET':
-        user = User.query.filter_by(id=user_id).first()
-        if user:
-            results = user.serialize()
+        row = Users.query.filter_by(id=user_id).first()
+        if row:
+            results = row.serialize()
             response_body = {"message": "ok",
-                            "total_records": 1,
-                            "results": results}
+                             "total_records": 1,
+                             "results": results}
             return response_body, 200
         else:
             response_body = {"message": "record not found"}
             return response_body, 200
 
 
-# Endpoint /people
+# Endpoint /characters
 @app.route('/characters', methods=['GET', 'POST'])
-def people():
+def characters():
     if request.method == 'GET':
-        characters = Characters.query.all()
-        results = [character.serialize() for character in characters]
+        all_rows = Characters.query.all()
+        results = [row.serialize() for row in all_rows]
         response_body = {"message": "ok",
                          "total_records": len(results),
                          "results": results}
@@ -100,13 +100,13 @@ def people():
         return response_body, 200
 
 
-# Endpoint /people/<int:people_id>
+# Endpoint /characters/<int:people_id>
 @app.route('/characters/<int:people_id>', methods=['GET'])
 def get_people(people_id):
     if request.method == 'GET':
-        character = Characters.query.filter_by(id=people_id).first()
-        if character:
-            results = character.serialize()
+        row = Characters.query.filter_by(id=people_id).first()
+        if row:
+            results = row.serialize()
             response_body = {"message": "ok",
                             "total_records": 1,
                             "results": results}
@@ -120,8 +120,8 @@ def get_people(people_id):
 @app.route('/planets', methods=['GET', 'POST'])
 def planets():
     if request.method == 'GET':
-        planets = Planets.query.all()
-        results = [planet.serialize() for planet in planets]
+        all_rows = Planets.query.all()
+        results = [row.serialize() for row in all_rows]
         response_body = {"message": "ok",
                          "total_records": len(results),
                          "results": results}
@@ -142,9 +142,9 @@ def planets():
 @app.route('/planets/<int:planet_id>', methods=['GET'])
 def get_planet(planet_id):
     if request.method == 'GET':
-        planet = Planets.query.filter_by(id=planet_id).first()
-        if planet:
-            results = planet.serialize()
+        row = Planets.query.filter_by(id=planet_id).first()
+        if row:
+            results = row.serialize()
             response_body = {"message": "ok",
                             "total_records": 1,
                             "results": results}
